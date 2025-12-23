@@ -5,28 +5,28 @@ Hospital_Management_System
 │   │   ├── java
 │   │   │   └── in
 │   │   │       └── HMS
-│   │   │           ├── Config        # Application and security configurations
+│   │   │           ├── Config        # Configuration classes
 │   │   │           ├── DTO           # Data Transfer Objects
 │   │   │           ├── Entity        # JPA entity classes
 │   │   │           ├── Exception     # Custom exception handling
 │   │   │           ├── IService      # Service interfaces
-│   │   │           ├── IServiceImpl  # Service implementation classes
-│   │   │           ├── Repository    # JPA repository interfaces
+│   │   │           ├── IServiceImpl  # Service implementations
+│   │   │           ├── Repository    # JPA repositories
 │   │   │           ├── Request       # Request payload classes
-│   │   │           ├── Response      # Response wrapper classes
+│   │   │           ├── Response      # Response payload classes
 │   │   │           ├── Rest          # REST controllers
-│   │   │           └── Utils         # Utility and helper classes
+│   │   │           └── Utils         # Utility classes
 │   │   │
 │   │   └── resources
-│   │       ├── application.properties / application.yml
-│   │       └── static / templates (if applicable)
+│   │       ├── application.properties
+│   │       └── static / templates
 │   │
 │   └── test
-│       └── java                     # Unit and integration test cases
+│       └── java
 │
-├── target                            # Build-generated files
-├── HELP.md                           # Spring Boot help documentation
-├── mvnw                              # Maven wrapper script (Linux/Mac)
-├── mvnw.cmd                          # Maven wrapper script (Windows)
-├── pom.xml                           # Maven project configuration
-└── README.md                         # Project documentation
+├── target
+├── HELP.md
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+└── README.md
