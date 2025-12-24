@@ -37,7 +37,7 @@ public class AdminAuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // 🔓 ADMIN SIGNUP
+    //ADMIN SIGNUP
     @PostMapping("/signup")
     public ResponseEntity<?> signup(
             @Valid @RequestBody AdminSignupRequest request,
@@ -65,7 +65,7 @@ public class AdminAuthController {
         return ResponseEntity.ok("Admin registered successfully");
     }
 
-    // 🔓 ADMIN LOGIN
+    // ADMIN LOGIN
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody AdminLoginRequest request,
