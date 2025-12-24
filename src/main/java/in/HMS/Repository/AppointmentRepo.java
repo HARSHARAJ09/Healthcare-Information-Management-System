@@ -12,4 +12,5 @@ public interface AppointmentRepo extends JpaRepository<Appointment, Integer> {
 
     Appointment findTopByPatient_PatientIdAndStatusOrderByCompletedAtDesc(
             Integer patientId, String status);
+
 }

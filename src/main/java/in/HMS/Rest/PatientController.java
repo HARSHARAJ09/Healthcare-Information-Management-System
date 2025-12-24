@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+
 import in.HMS.Entity.Appointment;
 import in.HMS.Entity.Patient;
 import in.HMS.Exception.PatientException;
@@ -13,7 +14,7 @@ import in.HMS.IService.IAppointmentService;
 import in.HMS.IService.IPatient;
 
 import in.HMS.Request.PatientAppointmentRequest;
-
+import in.HMS.Response.ApiResponse;
 import jakarta.validation.Valid;
 
 @RestController

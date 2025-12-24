@@ -9,75 +9,74 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import in.HMS.Entity.Patient;
+import in.HMS.Entity.Doctor;
 import in.HMS.Entity.User;
 import in.HMS.Exception.UserException;
+import in.HMS.IService.IDoctorService;
 import in.HMS.Repository.UserRepository;
-import in.HMS.Request.PatientLoginRequest;
-import in.HMS.Request.PatientSignupRequest;
+import in.HMS.Request.DoctorLoginRequest;
+import in.HMS.Request.DoctorSignupRequest;
 import in.HMS.Response.AuthResponse;
-import in.HMS.IService.IPatient;
 import in.HMS.Utils.JwtUtil;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/patient")
-public class PatientAuthController {
+@RequestMapping("/api/doctor")
+public class DoctorAuthController {
 
     private final UserRepository userRepository;
-    private final IPatient patientService;
+    private final IDoctorService doctorService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public PatientAuthController(
+    public DoctorAuthController(
             UserRepository userRepository,
-            IPatient patientService,
+            IDoctorService doctorService,
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil) {
         this.userRepository = userRepository;
-        this.patientService = patientService;
+        this.doctorService = doctorService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
     }
 
-    // 🔓 PATIENT SIGNUP
+    // 🔓 DOCTOR SIGNUP
     @PostMapping("/signup")
     public ResponseEntity<?> signup(
-            @Valid @RequestBody PatientSignupRequest request,
+            @Valid @RequestBody DoctorSignupRequest request,
             BindingResult result) {
 
         if (result.hasErrors()) {
-            throw new UserException("Invalid patient input", HttpStatus.BAD_REQUEST);
+            throw new UserException("Invalid doctor input", HttpStatus.BAD_REQUEST);
         }
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new UserException("Email already exists", HttpStatus.CONFLICT);
         }
 
+        // Create USER
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole("ROLE_PATIENT");
+        user.setRole("ROLE_DOCTOR");
         user = userRepository.save(user);
 
-        Patient patient = new Patient();
-        patient.setPatientName(request.getPatientName());
-        patient.setPatientEmail(request.getEmail());
-        patient.setPatientPhone(request.getPhone());
-        patient.setPatientGender(request.getGender());
-        patient.setPatientAge(request.getAge());
-        patient.setPatientAddress(request.getAddress());
-        patient.setUser(user);
+        // Create DOCTOR
+        Doctor doctor = new Doctor();
+        doctor.setDoctorName(request.getDoctorName());
+        doctor.setSpecialization(request.getSpecialization());
+        doctor.setIsBusy(false);
+        doctor.setUser(user);
 
-        patientService.registerPatient(patient);
+        doctorService.registerDoctor(doctor);
 
-        return ResponseEntity.ok("Patient registered successfully");
+        return ResponseEntity.ok("Doctor registered successfully");
     }
 
-    // 🔓 PATIENT LOGIN
+    // 🔓 DOCTOR LOGIN
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
-            @Valid @RequestBody PatientLoginRequest request,
+            @Valid @RequestBody DoctorLoginRequest request,
             BindingResult result) {
 
         if (result.hasErrors()) {
@@ -92,8 +91,8 @@ public class PatientAuthController {
             throw new UserException("Invalid password", HttpStatus.UNAUTHORIZED);
         }
 
-        if (!"ROLE_PATIENT".equals(user.getRole())) {
-            throw new UserException("Not a patient account", HttpStatus.FORBIDDEN);
+        if (!"ROLE_DOCTOR".equals(user.getRole())) {
+            throw new UserException("Not a doctor account", HttpStatus.FORBIDDEN);
         }
 
         Map<String, Object> claims = new HashMap<>();

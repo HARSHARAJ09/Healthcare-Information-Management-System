@@ -16,9 +16,10 @@ import io.jsonwebtoken.SignatureAlgorithm;
 public class JwtUtil {
 
     private final String SECRET_KEY =
-            "hms_secure_key_which_should_be_long_and_safe_12345";
+            "hms_secure_secret_key_should_be_long_and_safe_123";
 
     public String generateToken(String email, Map<String, Object> claims) {
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(email)
@@ -37,6 +38,8 @@ public class JwtUtil {
     }
 
     public List<GrantedAuthority> getAuthorities(String role) {
-        return Collections.singletonList(new SimpleGrantedAuthority(role));
+        return Collections.singletonList(
+                new SimpleGrantedAuthority(role)
+        );
     }
 }

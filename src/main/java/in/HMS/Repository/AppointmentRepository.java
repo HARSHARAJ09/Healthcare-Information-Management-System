@@ -8,4 +8,6 @@ import in.HMS.Entity.Appointment;
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
 
     List<Appointment> findByStatus(String status);
+    Appointment findByDoctor_DoctorIdAndStatus(Integer doctorId, String status);
+
 }

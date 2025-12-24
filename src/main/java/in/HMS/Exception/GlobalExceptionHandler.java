@@ -38,6 +38,30 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, ex.getStatus());
     }
 
+    @ExceptionHandler(PatientException.class)
+    public ResponseEntity<Map<String, Object>> handlePatientException(PatientException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "failure");
+        response.put("type", "PATIENT_EXCEPTION");
+        response.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+
+        return new ResponseEntity<>(response, ex.getStatus());
+    }
+    
+    @ExceptionHandler(DoctorException.class)
+    public ResponseEntity<Map<String, Object>> handleDoctorException(DoctorException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "failure");
+        response.put("type", "DOCTOR_EXCEPTION");
+        response.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+
+        return new ResponseEntity<>(response, ex.getStatus());
+    }
+
     // FALLBACK (ANY UNHANDLED ERROR)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
@@ -50,4 +74,7 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    
+
+
 }
