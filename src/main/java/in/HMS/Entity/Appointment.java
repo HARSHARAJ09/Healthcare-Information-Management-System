@@ -1,5 +1,6 @@
 package in.HMS.Entity;
 
+<<<<<<< HEAD
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
@@ -33,4 +34,8 @@ public class Appointment {
 
     private LocalDateTime createdAt;
     private LocalDateTime completedAt;
+=======
+public class Appointment {
+
+>>>>>>> 153b6c1f027ee28d6ec36ec93006c6afdb952be0
 }
