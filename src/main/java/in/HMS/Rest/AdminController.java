@@ -64,7 +64,7 @@ public class AdminController {
         return new ApiResponse<>("success", "Doctor allocation processed", null);
     }
 
-    // 3️⃣ View PENDING appointments
+    // 3️ View PENDING appointments
     @GetMapping("/appointments/pending")
     public ApiResponse<List<Appointment>> getPendingAppointments() {
         return new ApiResponse<>(
@@ -74,7 +74,7 @@ public class AdminController {
         );
     }
 
-    // 4️⃣ View COMPLETED appointments
+    // 4️ View COMPLETED appointments
     @GetMapping("/appointments/completed")
     public ApiResponse<List<Appointment>> getCompletedAppointments() {
         return new ApiResponse<>(

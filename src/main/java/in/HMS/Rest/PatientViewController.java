@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import in.HMS.Entity.Appointment;
@@ -31,9 +32,9 @@ public class PatientViewController {
         this.appointmentService = appointmentService;
     }
 
-    // 🔐 VIEW ALL APPOINTMENTS
+    //  VIEW ALL APPOINTMENTS
     @GetMapping("/appointments")
-    public ApiResponse<List<PatientAppointmentResponse>> getAppointments(
+    public ApiResponse<List<PatientAppointmentResponse>> getAppointments(@AuthenticationPrincipal
             Authentication authentication) {
 
         Integer userId = ((User) authentication.getPrincipal()).getUserId();
@@ -54,7 +55,7 @@ public class PatientViewController {
 
     // 🔐 VIEW LATEST PRESCRIPTION
     @GetMapping("/prescription/latest")
-    public ApiResponse<PatientAppointmentResponse> getLatestPrescription(
+    public ApiResponse<PatientAppointmentResponse> getLatestPrescription(@AuthenticationPrincipal
             Authentication authentication) {
 
         Integer userId = ((User) authentication.getPrincipal()).getUserId();
@@ -78,7 +79,7 @@ public class PatientViewController {
     }
 
     // 🔁 Mapper
-    private PatientAppointmentResponse mapToResponse(Appointment appointment) {
+    private PatientAppointmentResponse mapToResponse(@AuthenticationPrincipal Appointment appointment) {
 
         PatientAppointmentResponse res = new PatientAppointmentResponse();
         res.setAppointmentId(appointment.getAppointmentId());

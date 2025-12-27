@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -74,7 +75,7 @@ public class PatientAuthController {
         return ResponseEntity.ok("Patient registered successfully");
     }
 
-    // 🔓 PATIENT LOGIN
+    //  PATIENT LOGIN
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody PatientLoginRequest request,

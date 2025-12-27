@@ -1,6 +1,7 @@
 package in.HMS.Rest;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import in.HMS.Entity.Doctor;
@@ -26,10 +27,10 @@ public class DoctorTreatmentController {
         this.treatmentService = treatmentService;
     }
 
-    // 🔐 COMPLETE TREATMENT
+    //  COMPLETE TREATMENT
     @PostMapping("/treatment/complete")
     public ApiResponse<?> completeTreatment(
-            @Valid @RequestBody DoctorPrescriptionRequest request,
+            @Valid @RequestBody @AuthenticationPrincipal DoctorPrescriptionRequest request,
             Authentication authentication) {
 
         Integer userId = ((User) authentication.getPrincipal()).getUserId();

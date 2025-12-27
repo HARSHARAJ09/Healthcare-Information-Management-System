@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -34,7 +35,7 @@ public class PatientController {
     // 🔐 SUBMIT SYMPTOMS / CREATE APPOINTMENT
     @PostMapping("/appointment")
     public ApiResponse<?> createAppointment(
-            @Valid @RequestBody PatientAppointmentRequest request,
+            @Valid @RequestBody @AuthenticationPrincipal PatientAppointmentRequest request,
             Authentication authentication) {
 
         // Extract logged-in userId from JWT
