@@ -1,4 +1,6 @@
-# Hospital Management System (HMS)
+# ("Website is under development")🚧🚨
+
+# Hospital Management System (HMS) 
 
 A Spring Boot–based Hospital Management System developed to manage essential hospital operations such as patient registration, appointment scheduling, doctor allocation, and medical records management. The application exposes secure RESTful APIs, implements JWT-based authentication with Spring Security, and provides role-based access for **Admin**, **Doctor**, and **Patient**. API documentation and testing are enabled using **Swagger**.
 
