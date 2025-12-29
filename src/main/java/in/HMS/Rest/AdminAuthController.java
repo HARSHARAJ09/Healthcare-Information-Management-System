@@ -3,90 +3,68 @@ package in.HMS.Rest;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.BindingResult;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import in.HMS.Entity.Admin;
 import in.HMS.Entity.User;
 import in.HMS.Exception.UserException;
+import in.HMS.IService.CustomUserDetails;
 import in.HMS.Repository.UserRepository;
 import in.HMS.Request.AdminLoginRequest;
-import in.HMS.Request.AdminSignupRequest;
 import in.HMS.Response.AuthResponse;
-import in.HMS.IService.IAdminService;
 import in.HMS.Utils.JwtUtil;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin")
 public class AdminAuthController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private IAdminService adminService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    //ADMIN SIGNUP
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(
-            @Valid @RequestBody AdminSignupRequest request,
-            BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors()) {
-            throw new UserException("Invalid Admin Input", HttpStatus.BAD_REQUEST);
-        }
-
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new UserException("Email already exists", HttpStatus.CONFLICT);
-        }
-
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole("ROLE_ADMIN");
-        user = userRepository.save(user);
-
-        Admin admin = new Admin();
-        admin.setName(request.getName());
-        admin.setUser(user);
-        adminService.registerAdmin(admin);
-
-        return ResponseEntity.ok("Admin registered successfully");
+    public AdminAuthController(
+            AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil,
+            UserRepository userRepository
+    ) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
-    // ADMIN LOGIN
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
-            @Valid @RequestBody @AuthenticationPrincipal AdminLoginRequest request,
-            BindingResult bindingResult) {
+    public ResponseEntity<AuthResponse> login(@RequestBody AdminLoginRequest request) {
 
-        if (bindingResult.hasErrors()) {
-            throw new UserException("Invalid Login Input", HttpStatus.BAD_REQUEST);
-        }
+        // 1️⃣ authenticate credentials
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.getEmail(),
+                                request.getPassword()
+                        )
+                );
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UserException("Invalid Email", HttpStatus.NOT_FOUND));
+        // 2️⃣ store authentication
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UserException("Invalid Password", HttpStatus.UNAUTHORIZED);
-        }
+        // 3️⃣ get authenticated user
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
 
-        if (!user.getRole().equals("ROLE_ADMIN")) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() ->
+                        new UserException("Admin not found", HttpStatus.NOT_FOUND));
+
+        if (!"ROLE_ADMIN".equals(user.getRole())) {
             throw new UserException("Not an Admin account", HttpStatus.FORBIDDEN);
         }
 
+        // 4️⃣ create token
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getUserId());
         claims.put("role", user.getRole());

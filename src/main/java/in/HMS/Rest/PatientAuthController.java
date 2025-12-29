@@ -3,9 +3,13 @@ package in.HMS.Rest;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -13,11 +17,13 @@ import org.springframework.web.bind.annotation.*;
 import in.HMS.Entity.Patient;
 import in.HMS.Entity.User;
 import in.HMS.Exception.UserException;
+import in.HMS.IService.IPatient;
+import in.HMS.IService.CustomUserDetails;
+import in.HMS.IService.CustomUserDetailsService;
 import in.HMS.Repository.UserRepository;
 import in.HMS.Request.PatientLoginRequest;
 import in.HMS.Request.PatientSignupRequest;
 import in.HMS.Response.AuthResponse;
-import in.HMS.IService.IPatient;
 import in.HMS.Utils.JwtUtil;
 import jakarta.validation.Valid;
 
@@ -29,19 +35,27 @@ public class PatientAuthController {
     private final IPatient patientService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    @Autowired
+    private final AuthenticationManager authenticationManager;
+    private final CustomUserDetailsService customUserDetailsService;
 
     public PatientAuthController(
             UserRepository userRepository,
             IPatient patientService,
             PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil) {
+            JwtUtil jwtUtil,
+            AuthenticationManager authenticationManager,
+            CustomUserDetailsService customUserDetailsService) {
+
         this.userRepository = userRepository;
         this.patientService = patientService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
-    // 🔓 PATIENT SIGNUP
+    /* -------------------- SIGNUP (unchanged) -------------------- */
     @PostMapping("/signup")
     public ResponseEntity<?> signup(
             @Valid @RequestBody PatientSignupRequest request,
@@ -75,33 +89,28 @@ public class PatientAuthController {
         return ResponseEntity.ok("Patient registered successfully");
     }
 
-    //  PATIENT LOGIN
+    /* -------------------- LOGIN (rewritten) -------------------- */
+ 
+
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
-            @Valid @RequestBody PatientLoginRequest request,
-            BindingResult result) {
+    public ResponseEntity<AuthResponse> login(@RequestBody PatientLoginRequest req) {
 
-        if (result.hasErrors()) {
-            throw new UserException("Invalid login input", HttpStatus.BAD_REQUEST);
-        }
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        req.getEmail(),
+                        req.getPassword()
+                )
+        );
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() ->
-                        new UserException("Email not found", HttpStatus.NOT_FOUND));
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UserException("Invalid password", HttpStatus.UNAUTHORIZED);
-        }
-
-        if (!"ROLE_PATIENT".equals(user.getRole())) {
-            throw new UserException("Not a patient account", HttpStatus.FORBIDDEN);
-        }
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", user.getUserId());
-        claims.put("role", user.getRole());
-
-        String token = jwtUtil.generateToken(user.getEmail(), claims);
+        String token = jwtUtil.generateToken(
+                userDetails.getUsername(),
+                Map.of(
+                    "userId", userDetails.getUser().getUserId(),
+                    "role", userDetails.getUser().getRole()
+                )
+        );
 
         return ResponseEntity.ok(new AuthResponse(token));
     }

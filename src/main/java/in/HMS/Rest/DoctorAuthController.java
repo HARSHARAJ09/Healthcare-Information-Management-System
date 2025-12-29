@@ -5,7 +5,10 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -29,19 +32,23 @@ public class DoctorAuthController {
     private final IDoctorService doctorService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
 
     public DoctorAuthController(
             UserRepository userRepository,
             IDoctorService doctorService,
             PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil) {
+            JwtUtil jwtUtil,
+            AuthenticationManager authenticationManager) {
+
         this.userRepository = userRepository;
         this.doctorService = doctorService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
     }
 
-    // 🔓 DOCTOR SIGNUP
+    /* ---------------- SIGNUP (unchanged) ---------------- */
     @PostMapping("/signup")
     public ResponseEntity<?> signup(
             @Valid @RequestBody DoctorSignupRequest request,
@@ -55,14 +62,12 @@ public class DoctorAuthController {
             throw new UserException("Email already exists", HttpStatus.CONFLICT);
         }
 
-        // Create USER
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole("ROLE_DOCTOR");
         user = userRepository.save(user);
 
-        // Create DOCTOR
         Doctor doctor = new Doctor();
         doctor.setDoctorName(request.getDoctorName());
         doctor.setSpecialization(request.getSpecialization());
@@ -74,7 +79,7 @@ public class DoctorAuthController {
         return ResponseEntity.ok("Doctor registered successfully");
     }
 
-    //  DOCTOR LOGIN
+    /* ---------------- LOGIN (rewritten) ---------------- */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody DoctorLoginRequest request,
@@ -84,18 +89,28 @@ public class DoctorAuthController {
             throw new UserException("Invalid login input", HttpStatus.BAD_REQUEST);
         }
 
+        // 1️⃣ Authenticate credentials using Spring Security
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.getEmail(),
+                                request.getPassword()
+                        )
+                );
+
+        // 2️⃣ Store user in SecurityContext
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 3️⃣ Load user from DB (role validation)
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() ->
                         new UserException("Email not found", HttpStatus.NOT_FOUND));
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UserException("Invalid password", HttpStatus.UNAUTHORIZED);
-        }
 
         if (!"ROLE_DOCTOR".equals(user.getRole())) {
             throw new UserException("Not a doctor account", HttpStatus.FORBIDDEN);
         }
 
+        // 4️⃣ Generate JWT
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getUserId());
         claims.put("role", user.getRole());
