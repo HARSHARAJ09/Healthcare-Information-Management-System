@@ -26,7 +26,7 @@ public class AdminController {
         this.doctorRepo = doctorRepo;
     }
 
-    // 1️⃣ View NEW appointments
+    // 1️ View NEW appointments
     @GetMapping("/appointments/new")
     public ApiResponse<List<Appointment>> getNewAppointments() {
         return new ApiResponse<>(
@@ -36,7 +36,7 @@ public class AdminController {
         );
     }
 
-    // 2️⃣ Allocate appointment to doctor
+    // 2️ Allocate appointment to doctor
     @PostMapping("/appointments/allocate")
     public ApiResponse<?> allocateDoctor(
             @RequestParam Integer appointmentId,

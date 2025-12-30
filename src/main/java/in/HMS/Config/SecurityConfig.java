@@ -31,6 +31,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 
 @Configuration
 public class SecurityConfig {
+	
 @Autowired
     private final CustomUserDetailsService customUserDetailsService;
 @Autowired
@@ -84,8 +85,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
     	
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(customUserDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
 
         return provider;
