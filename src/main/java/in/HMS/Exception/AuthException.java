@@ -2,13 +2,13 @@ package in.HMS.Exception;
 
 import org.springframework.http.HttpStatus;
 
-public class AdminException extends RuntimeException {
+public class AuthException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
     private HttpStatus httpStatus;
 
-    public AdminException(String message, HttpStatus httpStatus) {
+    public AuthException(String message, HttpStatus httpStatus) {
         super(message);
         this.httpStatus = httpStatus != null
                 ? httpStatus
@@ -19,3 +19,4 @@ public class AdminException extends RuntimeException {
         return httpStatus;
     }
 }
+

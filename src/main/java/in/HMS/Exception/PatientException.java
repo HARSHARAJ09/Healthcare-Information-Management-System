@@ -6,16 +6,16 @@ public class PatientException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    private final HttpStatus status;
+    private HttpStatus httpStatus;
 
-    public PatientException(String message, HttpStatus status) {
+    public PatientException(String message, HttpStatus httpStatus) {
         super(message);
-        this.status = (status != null)
-                ? status
+        this.httpStatus = httpStatus != null
+                ? httpStatus
                 : HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
-    public HttpStatus getStatus() {
-        return status;
+    public HttpStatus getHttpStatus() {
+        return httpStatus;
     }
 }

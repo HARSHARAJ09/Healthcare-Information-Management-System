@@ -1,13 +1,19 @@
 package in.HMS.Repository;
-
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import in.HMS.Entity.Appointment;
 
-public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
+
+@Repository
+public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
     List<Appointment> findByStatus(String status);
-    Appointment findByDoctor_DoctorIdAndStatus(Integer doctorId, String status);
 
+    List<Appointment> findByPatientPatientId(Long patientId);
+
+    List<Appointment> findByDoctorDoctorId(Long doctorId);
 }
+

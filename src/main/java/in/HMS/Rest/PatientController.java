@@ -1,4 +1,4 @@
-package in.hms.controller;
+package in.HMS.Rest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,14 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import in.hms.dto.ApiResponse;
-import in.hms.dto.AppointmentRequest;
-import in.hms.dto.AppointmentResponse;
-import in.hms.entity.Appointment;
-import in.hms.exception.PatientException;
-import in.hms.security.CustomUserDetails;
-import in.hms.service.IAppointmentService;
-import in.hms.service.IPatientService;
+
+
+import in.HMS.Entity.Appointment;
+import in.HMS.Exception.PatientException;
+import in.HMS.IService.CustomUserDetails;
+import in.HMS.IService.IAppointmentService;
+import in.HMS.IService.IPatient;
+import in.HMS.Request.AppointmentRequest;
+import in.HMS.Response.ApiResponse;
+import in.HMS.Response.AppointmentResponse;
 
 @RestController
 @RequestMapping("/api/patient")
@@ -25,7 +27,7 @@ public class PatientController {
     private IAppointmentService appointmentService;
 
     @Autowired
-    private IPatientService patientService;
+    private IPatient patientService;
 
     @PostMapping("/appointments")
     public ApiResponse createAppointment(

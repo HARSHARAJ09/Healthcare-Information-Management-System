@@ -1,27 +1,37 @@
 package in.HMS.IService.Imp;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import in.HMS.Entity.Patient;
-import in.HMS.Repository.PatientRepo;
 import in.HMS.IService.IPatient;
+import in.HMS.Repository.PatientRepo;
 
 @Service
-public class PatientService implements IPatient {
+public class PatientService implements IPatient{
 
-    private final PatientRepo patientRepository;
-
-    public PatientService(PatientRepo patientRepository) {
-        this.patientRepository = patientRepository;
-    }
+    @Autowired
+    private PatientRepo patientRepository;
 
     @Override
-    public Patient registerPatient(Patient patient) {
+    public Patient create(Patient patient) {
         return patientRepository.save(patient);
     }
 
     @Override
-    public Patient findByUserId(Integer userId) {
-        return patientRepository.findByUser_UserId(userId);
+    public Patient findByEmail(String email) {
+        return patientRepository.findByEmail(email).orElse(null);
+    }
+
+    @Override
+    public Patient findById(Long patientId) {
+        return patientRepository.findById(patientId).orElse(null);
+    }
+
+    @Override
+    public List<Patient> findAll() {
+        return patientRepository.findAll();
     }
 }

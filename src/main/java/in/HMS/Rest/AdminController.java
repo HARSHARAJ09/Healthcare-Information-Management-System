@@ -1,4 +1,4 @@
-package in.hms.controller;
+package in.HMS.Rest;
 
 import java.util.List;
 
@@ -6,13 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import in.hms.dto.ApiResponse;
-import in.hms.dto.AppointmentResponse;
-import in.hms.entity.Appointment;
-import in.hms.exception.AdminException;
-import in.hms.security.CustomUserDetails;
-import in.hms.service.IAppointmentService;
-import in.hms.service.IDoctorService;
+
+import in.HMS.Entity.Appointment;
+import in.HMS.Exception.AdminException;
+import in.HMS.IService.CustomUserDetails;
+import in.HMS.IService.IAppointmentService;
+import in.HMS.IService.IDoctorService;
+import in.HMS.Response.ApiResponse;
+import in.HMS.Response.AppointmentResponse;
+
 
 @RestController
 @RequestMapping("/api/admin")

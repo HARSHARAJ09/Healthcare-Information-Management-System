@@ -4,7 +4,9 @@ import in.HMS.Entity.Admin;
 
 public interface IAdminService {
 
-    Admin registerAdmin(Admin admin);
+    Admin create(Admin admin);
 
-    Admin findByUserId(Integer userId);
+    Admin findByEmail(String email);
+
+    Admin findById(Long adminId);
 }

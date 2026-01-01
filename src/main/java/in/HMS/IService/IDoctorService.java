@@ -4,7 +4,11 @@ import in.HMS.Entity.Doctor;
 
 public interface IDoctorService {
 
-    Doctor registerDoctor(Doctor doctor);
+    Doctor create(Doctor doctor);
 
-    Doctor findByUserId(Integer userId);
+    Doctor findByEmail(String email);
+
+    Doctor findById(Long doctorId);
+
+    Doctor update(Doctor doctor);
 }

@@ -1,4 +1,4 @@
-package in.hms.controller;
+package in.HMS.Rest;
 
 import java.util.Map;
 
@@ -10,20 +10,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import in.hms.dto.JwtResponse;
-import in.hms.dto.LoginRequest;
-import in.hms.dto.PatientSignupRequest;
-import in.hms.entity.Patient;
-import in.hms.exception.AuthException;
-import in.hms.security.JwtUtil;
-import in.hms.service.IPatientService;
+import in.HMS.Entity.Patient;
+import in.HMS.Exception.AuthException;
+import in.HMS.IService.IPatient;
+import in.HMS.Request.LoginRequest;
+import in.HMS.Request.PatientSignupRequest;
+import in.HMS.Response.JwtResponse;
+import in.HMS.Utils.JwtUtil;
 
 @RestController
 @RequestMapping("/api/patient/auth")
 public class PatientAuthController {
 
     @Autowired
-    private IPatientService patientService;
+    private IPatient patientService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;

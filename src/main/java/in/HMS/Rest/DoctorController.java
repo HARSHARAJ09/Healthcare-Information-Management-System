@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import in.hms.dto.ApiResponse;
-import in.hms.dto.AppointmentResponse;
-import in.hms.entity.Appointment;
-import in.hms.exception.DoctorException;
-import in.hms.security.CustomUserDetails;
-import in.hms.service.IAppointmentService;
+import in.HMS.Entity.Appointment;
+import in.HMS.Exception.DoctorException;
+import in.HMS.IService.CustomUserDetails;
+import in.HMS.IService.IAppointmentService;
+import in.HMS.Response.ApiResponse;
+import in.HMS.Response.AppointmentResponse;
 
 @RestController
 @RequestMapping("/api/doctor")

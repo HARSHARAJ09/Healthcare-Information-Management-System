@@ -10,13 +10,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import in.hms.dto.AdminSignupRequest;
-import in.hms.dto.JwtResponse;
-import in.hms.dto.LoginRequest;
-import in.hms.entity.Admin;
-import in.hms.exception.AuthException;
-import in.hms.security.JwtUtil;
-import in.hms.service.IAdminService;
+import in.HMS.Entity.Admin;
+import in.HMS.Exception.AuthException;
+import in.HMS.IService.IAdminService;
+import in.HMS.Request.AdminSignupRequest;
+import in.HMS.Request.LoginRequest;
+import in.HMS.Response.JwtResponse;
+import in.HMS.Utils.JwtUtil;
+
+
 
 @RestController
 @RequestMapping("/api/admin/auth")

@@ -20,17 +20,23 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import in.hms.security.CustomUserDetailsService;
-import in.hms.security.JwtAuthenticationFilter;
+import in.HMS.IService.CustomUserDetailsService;
+import in.HMS.Utils.JwtFilter;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final JwtFilter jwtAuthenticationFilter;
 	private final CustomUserDetailsService customUserDetailsService;
 
-	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+	public SecurityConfig(JwtFilter jwtAuthenticationFilter,
 			CustomUserDetailsService customUserDetailsService) {
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.customUserDetailsService = customUserDetailsService;
@@ -118,4 +124,30 @@ public class SecurityConfig {
 
 		return source;
 	}
+	
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+
+        return new OpenAPI()
+            .info(new Info()
+                .title("Hospital Management System API")
+                .version("1.0")
+                .description("API documentation for HMS"))
+            .addSecurityItem(
+                new SecurityRequirement().addList("Bearer Authentication")
+            )
+            .components(
+                new Components().addSecuritySchemes(
+                    "Bearer Authentication",
+                    new SecurityScheme()
+                        .name("Authorization")
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT")
+                )
+            );
+    }
 }
+
+

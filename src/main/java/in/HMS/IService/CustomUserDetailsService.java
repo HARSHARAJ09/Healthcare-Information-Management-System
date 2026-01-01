@@ -6,12 +6,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import in.hms.entity.Admin;
-import in.hms.entity.Doctor;
-import in.hms.entity.Patient;
-import in.hms.repository.AdminRepository;
-import in.hms.repository.DoctorRepository;
-import in.hms.repository.PatientRepository;
+import in.HMS.Entity.Admin;
+import in.HMS.Entity.Doctor;
+import in.HMS.Entity.Patient;
+import in.HMS.Repository.AdminRepository;
+import in.HMS.Repository.DoctorRepository;
+import in.HMS.Repository.PatientRepo;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private DoctorRepository doctorRepository;
 
     @Autowired
-    private PatientRepository patientRepository;
+    private PatientRepo patientRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
