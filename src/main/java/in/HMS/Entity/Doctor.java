@@ -1,27 +1,31 @@
 package in.HMS.Entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
 @Data
-@Table(name = "doctors")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Doctor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer doctorId;
+    private Long doctorId;
 
+    @Column(nullable = false)
     private String doctorName;
 
     @Column(nullable = false)
     private String specialization;
 
-    // Doctor availability
-    private Boolean isBusy = false;
+    @Column(nullable = false, unique = true)
+    private String email;
 
-    //  Login mapping
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false)
+    private String password;
+
+    private boolean isBusy = false;
+
+    private String role = "ROLE_DOCTOR";
 }

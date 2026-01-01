@@ -1,86 +1,80 @@
-package in.HMS.Rest;
+package in.hms.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import in.HMS.Entity.Appointment;
-import in.HMS.Entity.Doctor;
-import in.HMS.Exception.AdminException;
-import in.HMS.Repository.AppointmentRepository;
-import in.HMS.Repository.DoctorRepository;
-import in.HMS.Response.ApiResponse;
-
-import org.springframework.http.HttpStatus;
+import in.hms.dto.ApiResponse;
+import in.hms.dto.AppointmentResponse;
+import in.hms.entity.Appointment;
+import in.hms.exception.AdminException;
+import in.hms.security.CustomUserDetails;
+import in.hms.service.IAppointmentService;
+import in.hms.service.IDoctorService;
 
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    private final AppointmentRepository appointmentRepo;
-    private final DoctorRepository doctorRepo;
+    @Autowired
+    private IAppointmentService appointmentService;
 
-    public AdminController(AppointmentRepository appointmentRepo,
-                           DoctorRepository doctorRepo) {
-        this.appointmentRepo = appointmentRepo;
-        this.doctorRepo = doctorRepo;
-    }
+    @Autowired
+    private IDoctorService doctorService;
 
-    // 1️ View NEW appointments
     @GetMapping("/appointments/new")
-    public ApiResponse<List<Appointment>> getNewAppointments() {
-        return new ApiResponse<>(
-                "success",
-                "New appointments",
-                appointmentRepo.findByStatus("NEW")
-        );
+    public List<AppointmentResponse> getNewAppointments(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return appointmentService.findByStatus("NEW")
+                .stream()
+                .map(this::map)
+                .toList();
     }
 
-    // 2️ Allocate appointment to doctor
-    @PostMapping("/appointments/allocate")
-    public ApiResponse<?> allocateDoctor(
-            @RequestParam Integer appointmentId,
-            @RequestParam Integer doctorId) {
+    @PutMapping("/appointments/{appointmentId}/assign/{doctorId}")
+    public ApiResponse assignDoctor(
+            @PathVariable Long appointmentId,
+            @PathVariable Long doctorId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        Appointment appointment = appointmentRepo.findById(appointmentId)
-                .orElseThrow(() ->
-                        new AdminException("Appointment not found", HttpStatus.NOT_FOUND));
-
-        Doctor doctor = doctorRepo.findById(doctorId)
-                .orElseThrow(() ->
-                        new AdminException("Doctor not found", HttpStatus.NOT_FOUND));
-
-        if (doctor.getIsBusy()) {
-            appointment.setStatus("PENDING");
-        } else {
-            appointment.setDoctor(doctor);
-            appointment.setStatus("ACTIVE");
-            doctor.setIsBusy(true);
-            doctorRepo.save(doctor);
+        Appointment appointment = appointmentService.findById(appointmentId);
+        if (appointment == null) {
+            throw new AdminException("Appointment not found", null);
         }
 
-        appointmentRepo.save(appointment);
+        appointment.setDoctor(doctorService.findById(doctorId));
+        appointment.setStatus("ACTIVE");
+        appointmentService.update(appointment);
 
-        return new ApiResponse<>("success", "Doctor allocation processed", null);
+        return new ApiResponse("Doctor assigned successfully");
     }
 
-    // 3️ View PENDING appointments
     @GetMapping("/appointments/pending")
-    public ApiResponse<List<Appointment>> getPendingAppointments() {
-        return new ApiResponse<>(
-                "success",
-                "Pending appointments",
-                appointmentRepo.findByStatus("PENDING")
-        );
+    public List<AppointmentResponse> getPendingAppointments() {
+        return appointmentService.findByStatus("PENDING")
+                .stream().map(this::map).toList();
     }
 
-    // 4️ View COMPLETED appointments
     @GetMapping("/appointments/completed")
-    public ApiResponse<List<Appointment>> getCompletedAppointments() {
-        return new ApiResponse<>(
-                "success",
-                "Completed appointments",
-                appointmentRepo.findByStatus("COMPLETED")
+    public List<AppointmentResponse> getCompletedAppointments() {
+        return appointmentService.findByStatus("COMPLETED")
+                .stream().map(this::map).toList();
+    }
+
+    private AppointmentResponse map(Appointment a) {
+        AppointmentResponse r = new AppointmentResponse();
+        r.setAppointmentId(a.getAppointmentId());
+        r.setStatus(a.getStatus());
+        r.setPrescription(a.getPrescription());
+        r.setSymptoms(a.getSymptoms());
+        r.setCreatedAt(a.getCreatedAt());
+        r.setCompletedAt(a.getCompletedAt());
+        r.setDoctorName(
+                a.getDoctor() != null ? a.getDoctor().getDoctorName() : null
         );
+        return r;
     }
 }

@@ -3,16 +3,17 @@ package in.HMS.Entity;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
 @Data
-@Table(name = "appointments")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Appointment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer appointmentId;
+    private Long appointmentId;
 
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
@@ -20,17 +21,19 @@ public class Appointment {
 
     @ManyToOne
     @JoinColumn(name = "doctor_id")
-    private Doctor doctor; // allocated later by admin
+    private Doctor doctor;
 
     @Column(nullable = false, length = 5000)
     private String symptoms;
 
     @Column(length = 5000)
-    private String prescription; // filled by doctor later
+    private String prescription;
 
+    @Column(nullable = false)
     private String status; 
     // NEW, PENDING, ACTIVE, COMPLETED
 
     private LocalDateTime createdAt;
+
     private LocalDateTime completedAt;
 }

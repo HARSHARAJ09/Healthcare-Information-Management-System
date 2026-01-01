@@ -1,33 +1,34 @@
 package in.HMS.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "patients")
 public class Patient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer patientId;
+    private Long patientId;
 
+    @Column(nullable = false)
     private String patientName;
 
-    @Column(unique = true, nullable = false)
-    private String patientEmail;
+    @Column(nullable = false, unique = true)
+    private String email;
 
-    private String patientPhone;
-    private String patientGender;
-    private Integer patientAge;
-    private String patientAddress;
+    @Column(nullable = false)
+    private String password;
 
-    //  Link to login credentials
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Integer age;
+
+    private String gender;
+
+    private String phone;
+
+    private String address;
+
+    private String role = "ROLE_PATIENT";
 }

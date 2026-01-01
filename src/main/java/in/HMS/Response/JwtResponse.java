@@ -1,11 +1,11 @@
 package in.HMS.Response;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ApiResponse {
-    private String message;
+public class JwtResponse {
+    private String token;
 }
+

@@ -1,6 +1,5 @@
-package in.HMS.Rest;
+package in.hms.controller;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,110 +7,84 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import in.HMS.Entity.Patient;
-import in.HMS.Entity.User;
-import in.HMS.Exception.UserException;
-import in.HMS.IService.IPatient;
-import in.HMS.IService.CustomUserDetails;
-import in.HMS.IService.CustomUserDetailsService;
-import in.HMS.Repository.UserRepository;
-import in.HMS.Request.PatientLoginRequest;
-import in.HMS.Request.PatientSignupRequest;
-import in.HMS.Response.AuthResponse;
-import in.HMS.Utils.JwtUtil;
-import jakarta.validation.Valid;
+import in.hms.dto.JwtResponse;
+import in.hms.dto.LoginRequest;
+import in.hms.dto.PatientSignupRequest;
+import in.hms.entity.Patient;
+import in.hms.exception.AuthException;
+import in.hms.security.JwtUtil;
+import in.hms.service.IPatientService;
 
 @RestController
-@RequestMapping("/api/patient")
+@RequestMapping("/api/patient/auth")
 public class PatientAuthController {
 
-    private final UserRepository userRepository;
-    private final IPatient patientService;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
     @Autowired
-    private final AuthenticationManager authenticationManager;
-    private final CustomUserDetailsService customUserDetailsService;
+    private IPatientService patientService;
 
-    public PatientAuthController(
-            UserRepository userRepository,
-            IPatient patientService,
-            PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil,
-            AuthenticationManager authenticationManager,
-            CustomUserDetailsService customUserDetailsService) {
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-        this.userRepository = userRepository;
-        this.patientService = patientService;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.authenticationManager = authenticationManager;
-        this.customUserDetailsService = customUserDetailsService;
-    }
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
-    /* -------------------- SIGNUP (unchanged) -------------------- */
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(
-            @Valid @RequestBody PatientSignupRequest request,
-            BindingResult result) {
+    public ResponseEntity<JwtResponse> signup(
+            @RequestBody PatientSignupRequest request) {
 
-        if (result.hasErrors()) {
-            throw new UserException("Invalid patient input", HttpStatus.BAD_REQUEST);
+        if (patientService.findByEmail(request.getEmail()) != null) {
+            throw new AuthException("Email already exists", HttpStatus.CONFLICT);
         }
-
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new UserException("Email already exists", HttpStatus.CONFLICT);
-        }
-
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole("ROLE_PATIENT");
-        user = userRepository.save(user);
 
         Patient patient = new Patient();
         patient.setPatientName(request.getPatientName());
-        patient.setPatientEmail(request.getEmail());
-        patient.setPatientPhone(request.getPhone());
-        patient.setPatientGender(request.getGender());
-        patient.setPatientAge(request.getAge());
-        patient.setPatientAddress(request.getAddress());
-        patient.setUser(user);
+        patient.setEmail(request.getEmail());
+        patient.setPassword(passwordEncoder.encode(request.getPassword()));
+        patient.setAge(request.getAge());
+        patient.setGender(request.getGender());
+        patient.setPhone(request.getPhone());
+        patient.setAddress(request.getAddress());
 
-        patientService.registerPatient(patient);
-
-        return ResponseEntity.ok("Patient registered successfully");
-    }
-
-    /* -------------------- LOGIN (rewritten) -------------------- */
- 
-
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody PatientLoginRequest req) {
-
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        req.getEmail(),
-                        req.getPassword()
-                )
-        );
-
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Patient saved = patientService.create(patient);
 
         String token = jwtUtil.generateToken(
-                userDetails.getUsername(),
+                saved.getEmail(),
                 Map.of(
-                    "userId", userDetails.getUser().getUserId(),
-                    "role", userDetails.getUser().getRole()
+                        "role", saved.getRole(),
+                        "entityId", saved.getPatientId()
                 )
         );
 
-        return ResponseEntity.ok(new AuthResponse(token));
+        return ResponseEntity.ok(new JwtResponse(token));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<JwtResponse> login(
+            @RequestBody LoginRequest request) {
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        Patient patient = patientService.findByEmail(request.getEmail());
+
+        String token = jwtUtil.generateToken(
+                patient.getEmail(),
+                Map.of(
+                        "role", patient.getRole(),
+                        "entityId", patient.getPatientId()
+                )
+        );
+
+        return ResponseEntity.ok(new JwtResponse(token));
     }
 }

@@ -1,63 +1,82 @@
-package in.HMS.Rest;
+package in.hms.controller;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-
-import in.HMS.Entity.Appointment;
-import in.HMS.Entity.Patient;
-import in.HMS.Exception.PatientException;
-import in.HMS.IService.IAppointmentService;
-import in.HMS.IService.IPatient;
-
-import in.HMS.Request.PatientAppointmentRequest;
-import in.HMS.Response.ApiResponse;
-import jakarta.validation.Valid;
+import in.hms.dto.ApiResponse;
+import in.hms.dto.AppointmentRequest;
+import in.hms.dto.AppointmentResponse;
+import in.hms.entity.Appointment;
+import in.hms.exception.PatientException;
+import in.hms.security.CustomUserDetails;
+import in.hms.service.IAppointmentService;
+import in.hms.service.IPatientService;
 
 @RestController
 @RequestMapping("/api/patient")
 public class PatientController {
 
-    private final IPatient patientService;
-    private final IAppointmentService appointmentService;
+    @Autowired
+    private IAppointmentService appointmentService;
 
-    public PatientController(
-            IPatient patientService,
-            IAppointmentService appointmentService) {
-        this.patientService = patientService;
-        this.appointmentService = appointmentService;
-    }
+    @Autowired
+    private IPatientService patientService;
 
-    // 🔐 SUBMIT SYMPTOMS / CREATE APPOINTMENT
-    @PostMapping("/appointment")
-    public ApiResponse<?> createAppointment(
-            @Valid @RequestBody @AuthenticationPrincipal PatientAppointmentRequest request,
-            Authentication authentication) {
-
-        // Extract logged-in userId from JWT
-        Integer userId = ((in.HMS.Entity.User) authentication.getPrincipal()).getUserId();
-
-        Patient patient = patientService.findByUserId(userId);
-        if (patient == null) {
-            throw new PatientException("Patient not found", HttpStatus.NOT_FOUND);
-        }
+    @PostMapping("/appointments")
+    public ApiResponse createAppointment(
+            @RequestBody AppointmentRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Appointment appointment = new Appointment();
-        appointment.setPatient(patient);
+        appointment.setPatient(
+                patientService.findById(userDetails.getEntityId())
+        );
         appointment.setSymptoms(request.getSymptoms());
         appointment.setStatus("NEW");
         appointment.setCreatedAt(LocalDateTime.now());
 
-        appointmentService.createAppointment(appointment);
+        appointmentService.create(appointment);
 
-        return new ApiResponse<>(
-                "success",
-                "Appointment request submitted successfully",
-                null
-        );
+        return new ApiResponse("Appointment created successfully");
+    }
+
+    @GetMapping("/appointments")
+    public List<AppointmentResponse> getAppointments(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return appointmentService.findByPatientId(userDetails.getEntityId())
+                .stream().map(this::map).toList();
+    }
+
+    @GetMapping("/appointments/latest-prescription")
+    public String getLatestPrescription(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return appointmentService.findByPatientId(userDetails.getEntityId())
+                .stream()
+                .map(Appointment::getPrescription)
+                .filter(Objects::nonNull)
+                .reduce((a, b) -> b)
+                .orElseThrow(() ->
+                        new PatientException("No prescription found", null)
+                );
+    }
+
+    private AppointmentResponse map(Appointment a) {
+        AppointmentResponse r = new AppointmentResponse();
+        r.setAppointmentId(a.getAppointmentId());
+        r.setDoctorName(
+                a.getDoctor() != null ? a.getDoctor().getDoctorName() : null);
+        r.setStatus(a.getStatus());
+        r.setPrescription(a.getPrescription());
+        r.setSymptoms(a.getSymptoms());
+        r.setCreatedAt(a.getCreatedAt());
+        r.setCompletedAt(a.getCompletedAt());
+        return r;
     }
 }

@@ -1,20 +1,26 @@
 package in.HMS.Entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
 @Data
-@Table(name = "admins")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Admin {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer adminId;
+    private Long adminId;
 
+    @Column(nullable = false)
     private String name;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    private String role = "ROLE_ADMIN";
 }

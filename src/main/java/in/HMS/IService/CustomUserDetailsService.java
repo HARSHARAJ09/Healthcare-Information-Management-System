@@ -1,30 +1,48 @@
 package in.HMS.IService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import in.HMS.Entity.User;
-import in.HMS.Repository.UserRepository;
+import in.hms.entity.Admin;
+import in.hms.entity.Doctor;
+import in.hms.entity.Patient;
+import in.hms.repository.AdminRepository;
+import in.hms.repository.DoctorRepository;
+import in.hms.repository.PatientRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository repo;
+    @Autowired
+    private AdminRepository adminRepository;
 
-    public CustomUserDetailsService(UserRepository repo) {
-        this.repo = repo;
-    }
+    @Autowired
+    private DoctorRepository doctorRepository;
+
+    @Autowired
+    private PatientRepository patientRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        User user = repo.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+        Admin admin = adminRepository.findByEmail(email).orElse(null);
+        if (admin != null) {
+            return new CustomUserDetails(admin);
+        }
 
-        return new CustomUserDetails(user);
+        Doctor doctor = doctorRepository.findByEmail(email).orElse(null);
+        if (doctor != null) {
+            return new CustomUserDetails(doctor);
+        }
+
+        Patient patient = patientRepository.findByEmail(email).orElse(null);
+        if (patient != null) {
+            return new CustomUserDetails(patient);
+        }
+
+        throw new UsernameNotFoundException("User not found with email: " + email);
     }
 }

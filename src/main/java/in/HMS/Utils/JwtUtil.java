@@ -1,45 +1,45 @@
 package in.HMS.Utils;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import javax.crypto.SecretKey;
+
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY =
-            "hms_secure_secret_key_should_be_long_and_safe_123";
+    private final SecretKey SECRET_KEY =
+            Keys.hmacShaKeyFor("hms_secret_key_12345678901234567890".getBytes());
 
     public String generateToken(String email, Map<String, Object> claims) {
-
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractUsername(String token) {
-        return Jwts.parser()
+    public String extractEmail(String token) {
+        return Jwts.parserBuilder()
                 .setSigningKey(SECRET_KEY)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
     }
 
-    public List<GrantedAuthority> getAuthorities(String role) {
-        return Collections.singletonList(
-                new SimpleGrantedAuthority(role)
-        );
+    public Map<String, Object> extractClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
