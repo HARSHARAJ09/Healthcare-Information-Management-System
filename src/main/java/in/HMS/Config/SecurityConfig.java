@@ -10,7 +10,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +28,8 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
 
+
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
 
 	private final JwtFilter jwtAuthenticationFilter;
@@ -93,8 +92,8 @@ public class SecurityConfig {
 	 */
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(customUserDetailsService);
+		DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
+//		provider.setUserDetailsService(customUserDetailsService);
 		provider.setPasswordEncoder(passwordEncoder());
 		return provider;
 	}
@@ -125,7 +124,6 @@ public class SecurityConfig {
 		return source;
 	}
 	
-
     @Bean
     public OpenAPI customOpenAPI() {
 
@@ -149,5 +147,3 @@ public class SecurityConfig {
             );
     }
 }
-
-
